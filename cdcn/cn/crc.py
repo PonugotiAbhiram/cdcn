@@ -1,22 +1,45 @@
 
-def crc(data, poly, bits):
-    data = data << bits
+def divide(data, poly):
+    n = len(poly)
+    data = list(data)
 
-    while data.bit_length() >= poly.bit_length():
-        data ^= poly << (data.bit_length() - poly.bit_length())
+    for i in range(len(data) - n + 1):
+        if data[i] == '1':
+            for j in range(n):
+                data[i + j] = '0' if data[i + j] == poly[j] else '1'
 
-    return data
+    return ''.join(data[-(n - 1):])
 
 
-s = input("Enter data: ")
-data = int.from_bytes(s.encode(), "big")
+def CRC(msg, poly):
+    data = ""
 
-crc12 = crc(data, 0x180F, 12)
-crc16 = crc(data, 0x18005, 16)
-crc_ccitt = crc(data, 0x11021, 16)
+    for c in msg:
+        data += format(ord(c), '08b')
 
-print("\nOriginal Data:", s)
+    r = len(poly) - 1
+    appended = data + '0' * r
 
-print("CRC-12:", format(crc12, '012b'))
-print("CRC-16:", format(crc16, '016b'))
-print("CRC-CCITT:", format(crc_ccitt, '016b'))
+    rem = divide(appended, poly)
+    codeword = data + rem
+
+    print("\nPolynomial :", poly)
+    print("Data       :", data)
+    print("CRC        :", rem)
+    print("Codeword   :", codeword)
+
+
+msg = input("Enter data: ")
+
+# CRC-12
+crc12 = "1100000001111"
+
+# CRC-16
+crc16 = "11000000000000101"
+
+# CRC-CCITT
+crcCCITT = "10001000000100001"
+
+CRC(msg, crc12)
+CRC(msg, crc16)
+CRC(msg, crcCCITT)
